@@ -1,5 +1,5 @@
 package constant
 
 const (
-	DBPATH = "test.db"
+	DBPATH = "identifier.sqlite"
 )
