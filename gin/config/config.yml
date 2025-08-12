@@ -13,11 +13,6 @@ db:
   max_open_conns: 100
   conn_max_lifetime: 3600
 
-redis:
-  host: "127.0.0.1"
-  port: 6379
-  password: ""
-  db: 0
 
 cache:
   article_expire: 600
@@ -25,5 +20,5 @@ cache:
 
 # JWT配置
 jwt:
-  secret: "your_super_secret_jwt_key_change_in_production"
+  secret: "dzhwu"
   expire_hours: 24

@@ -71,5 +71,6 @@ func GetJWTConfig() *JWTConfig {
 }
 
 func InitConfig() {
-	global.InitDB(InitDB())
+	db := InitDB()
+	global.InitDB(db)
 }

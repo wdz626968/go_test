@@ -3,6 +3,9 @@ package main
 import (
 	"go_test/gin/config"
 	"go_test/gin/controller"
+	"go_test/gin/global"
+	"go_test/gin/middlerware"
+	"go_test/gin/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +13,7 @@ import (
 
 func main() {
 	router := gin.Default()
+	router.Use(middlerware.ErrorHandler())
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -20,20 +24,44 @@ func main() {
 		firstName := c.DefaultQuery("firstname", "Guest")
 		c.String(http.StatusOK, "Hello %s", firstName)
 	})
-	// RESTful 路由示例
+	// 添加CORS中间件，允许所有跨域请求
+	router.Use(middlerware.CORSMiddleware())
+
 	v1 := router.Group("/api/v1")
 	{
-		users := v1.Group("/users")
+		auth := v1.Group("/auth")
 		{
-			users.GET("/:id", controller.GetUser)
-			users.POST("", controller.CreateUser)
+			auth.POST("", controller.Register)
+			auth.POST("/login", controller.Login)
 			//users.GET("/:id", getUser)
 		}
+
+		users := v1.Group("/users")
+		{
+			users.GET("/:id([0-9]+)", controller.GetUser)
+			//users.GET("/:id", getUser)
+		}
+		posts := v1.Group("/posts", middlerware.JWTAuthMiddleware(), middlerware.RBACAuthMiddleware([]string{"user", "admin"}))
+		{
+			posts.GET("/:id([0-9]+)", controller.GetPost)
+			posts.GET("/all", controller.GetAllPosts)
+			posts.POST("/", controller.CreatePosts)
+			posts.PUT("/", controller.UpdatePosts)
+			posts.DELETE("/", controller.DeletePosts)
+		}
+
+		comments := v1.Group("/comments", middlerware.JWTAuthMiddleware(), middlerware.RBACAuthMiddleware([]string{"user", "admin"}))
+		{
+			comments.GET("/id/:id([0-9]+)", controller.GetComment)
+			comments.GET("/post_id/:post_id([0-9]+)", controller.GetCommentsNyPostId)
+			comments.POST("/", controller.CreateComments)
+			//comments.PUT("/", controller.UpdateComments)
+			//comments.DELETE("/", controller.DeleteComments)
+		}
 	}
+	router.Use(middlerware.RequestLogger())
+
 	config.InitConfig()
+	global.DB.AutoMigrate(&model.Comment{}, &model.Post{}, &model.User{})
 	router.Run()
-}
-
-func getUser(context *gin.Context) {
-
 }
