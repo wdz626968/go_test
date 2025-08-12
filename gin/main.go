@@ -11,6 +11,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// [客户端请求]
+//
+//	↓
+//
+// [Logger中间件(RequestLogger)] → 记录请求开始时间
+//
+//	↓
+//
+// [CORS中间件(CORSMiddleware)] → 处理跨域请求
+//
+//	↓
+//
+// [JWT鉴权(JWTAuthMiddleware)] → 验证访问令牌
+//
+//	↓
+//
+// [RBAC鉴权(RBACAuthMiddleware)] → 校验用户权限
+//
+//	↓
+//
+// [业务处理] → 核心业务逻辑
+//
+//	↓
+//
+// [Logger中间件(RequestLogger)] ← 记录响应耗时
 func main() {
 	router := gin.Default()
 	router.Use(middlerware.ErrorHandler())
