@@ -8,7 +8,7 @@ func main() {
 }
 
 func twoNumberSumTarget(nums []int, target int) []int {
-	m := make(map[int]int, 10)
+	m := make(map[int]int)
 	for i := 0; i < len(nums); i++ {
 		if p, ok := m[target-nums[i]]; ok {
 			return []int{i, p}
