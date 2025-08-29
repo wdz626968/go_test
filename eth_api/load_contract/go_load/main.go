@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	storeContract, err := store.NewStore(common.HexToAddress("0xB5BeF50C0A41446968f6cB89Bb80e75B95cfc4C8"), client)
+	storeContract, err := store.NewStore(common.HexToAddress("0xf089172C58De37e6D3eFe2D7C5889e8EC3fe4906"), client)
 	if err != nil {
 		log.Fatal(err)
 	}
