@@ -83,6 +83,11 @@ func main() {
 			//comments.PUT("/", controller.UpdateComments)
 			//comments.DELETE("/", controller.DeleteComments)
 		}
+		tokens := v1.Group("/tokens")
+		{
+			tokens.GET("/:mint", controller.GetTokenAccountsByOwner)
+			//users.GET("/:id", getUser)
+		}
 	}
 	router.Use(middlerware.RequestLogger())
 
