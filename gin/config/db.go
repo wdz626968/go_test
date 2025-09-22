@@ -1,6 +1,7 @@
 package config
 
 import (
+	"go_test/gin/model"
 	"go_test/gorm/constant"
 
 	"gorm.io/driver/sqlite"
@@ -9,7 +10,9 @@ import (
 
 // InitDB 初始化数据库
 func InitDB() *gorm.DB {
-	return ConnectDB()
+	db := ConnectDB()
+	db.AutoMigrate(&model.User{})
+	return db
 }
 
 // ConnectDB 连接数据库

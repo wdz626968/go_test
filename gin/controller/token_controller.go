@@ -2,8 +2,11 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"go_test/gin/controller/dto"
 	"go_test/gin/service"
 	"net/http"
+	"strings"
 
 	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/common"
@@ -42,8 +45,24 @@ func GetTokenAccountsByOwner(ctx *gin.Context) {
  * 获取市场总览信息
  */
 func GetMarketOverview(ctx *gin.Context) {
-	//todo 对DB数据做聚合操作
-	//ctx.JSON(http.StatusOK, marketService.GetMarketOverview())
+	stockCodes := "AAPL,TSLA"
+	avgInfo, _ := stockService.CalculateAvgGain("8", "1", stockCodes)
+	//总市值
+	//var totalMarketCap float64
+	//stockCodeList := strings.Split(stockCodes, ",")
+	//fmt.Println(stockCodeList)
+	//for i := 0; i < len(stockCodeList); i++ {
+	//	info, err := stockService.GetStockInfos(stockCodeList[i])
+	//	if err != nil {
+	//		ctx.JSON(500, gin.H{"error": err.Error()})
+	//		return
+	//	}
+	//	//计算总市值
+	//	totalMarketCap += info.MarketCap
+	//}
+	overview := stockService.CalculateMarketOverview(avgInfo)
+	//overview.TotalMarketCap = totalMarketCap
+	ctx.JSON(200, overview)
 }
 
 /*
@@ -53,6 +72,45 @@ func GetStockList(ctx *gin.Context) {
 	//todo 分页查询DB中的股票与代币信息与价格等信息
 	//todo 是否是实时去拿信息？ 通过代币信息调用聚合预言机合约拿到实时的价格、涨跌幅等构造前端所需要的数据结构
 	//ctx.JSON(http.StatusOK, stockService.GetStockList())
+	stockListString := stockService.GetStockList()
+
+	ctx.JSON(200, stockListString)
+	ctx.JSON(http.StatusCreated, stockListString)
+
+}
+
+/**
+ * 获取股票信息
+ */
+func GetStockInfo(ctx *gin.Context) {
+
+	stockCodes := ctx.Query("stockCodes")
+	fmt.Println("GetStockInfo", stockCodes)
+	//计算7日平均涨幅
+	avgInfo, _ := stockService.CalculateAvgGain(stockCodes, "8", "8")
+	//stockCode用逗号分隔，取每一个code构造dto.StockInfo
+	stockCodeList := strings.Split(stockCodes, ",")
+	//用stockCodes构造stockInfo数组
+	var stockInfos = make([]dto.StockInfo, 0)
+	for i := 0; i < len(stockCodeList); i++ {
+		info, err := stockService.GetStockInfos(stockCodeList[i])
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		stockInfos = append(stockInfos, dto.StockInfo{
+			Symbol:               stockCodeList[i],
+			Name:                 info.Name,
+			Price:                avgInfo[stockCodeList[i]].Price,
+			MarketCap:            info.MarketCap,
+			StockChange7d:        avgInfo[stockCodeList[i]].StockChange,
+			StockChange7dVolume:  avgInfo[stockCodeList[i]].StockChangeVolume,
+			StockChangePercent7d: avgInfo[stockCodeList[i]].StockChangePercent,
+			BusinessDesc:         info.BusinessDesc,
+		})
+	}
+	ctx.JSON(http.StatusOK, stockInfos)
 }
 
 /**

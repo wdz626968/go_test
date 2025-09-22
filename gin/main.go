@@ -88,6 +88,13 @@ func main() {
 			tokens.GET("/:mint", controller.GetTokenAccountsByOwner)
 			//users.GET("/:id", getUser)
 		}
+		stocks := v1.Group("/stocks")
+		{
+			stocks.GET("/list", controller.GetStockList)
+			stocks.GET("/info", controller.GetStockInfo)
+			stocks.GET("/overview", controller.GetMarketOverview)
+			//users.GET("/:id", getUser)
+		}
 	}
 	router.Use(middlerware.RequestLogger())
 
